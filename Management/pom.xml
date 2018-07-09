@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>Management</groupId>
+	<artifactId>Management</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<modules>
+		<module>NetworkManagement</module>
+		<module>Infrastructure</module>
+		<module>Notifier</module>
+	</modules>
+
+	<organization>
+		<name>Adin000</name>
+	</organization>
+	<developers>
+		<developer>
+			<name>Adrian Wosiński</name>
+			<roles>
+				<role>Developer</role>
+				<role>Tester</role>
+			</roles>
+			<email>adrian.wosinski@gmail.com</email>
+		</developer>
+	</developers>
+
+	<repositories>
+		<repository>
+			<id>jboss</id>
+			<name>jboss repo</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<!-- RESTEasy -->
+		<resteasy-jaxrs.version>3.1.4.Final</resteasy-jaxrs.version>
+		<resteasy-servlet-initializer.version>3.1.2.Final</resteasy-servlet-initializer.version>
+		<resteasy-jaxb-provider.version>3.0.16.Final</resteasy-jaxb-provider.version>
+		<resteasy-jackson-provider.version>3.1.4.Final</resteasy-jackson-provider.version>
+
+		<!-- JavaEE -->
+		<javax.enterprise.cdi.api.version>2.0</javax.enterprise.cdi.api.version>
+		<javax.ejb-api.version>3.2</javax.ejb-api.version>
+		<org.hibernate-entitymanager.version>5.1.0.Final</org.hibernate-entitymanager.version>
+
+		<!-- Logger -->
+		<org.slf4j.api.version>1.7.21</org.slf4j.api.version>
+		<ch.qos.logback.classic.version>1.1.7</ch.qos.logback.classic.version>
+
+		<!-- Tests -->
+		<junit.version>3.8.1</junit.version>
+
+		<!-- Plugins -->
+		<org.apache.maven.plugins.maven-compiler.version>3.2</org.apache.maven.plugins.maven-compiler.version>
+		<java.compile.version>1.8</java.compile.version>	
+	</properties>
+
+</project>
