@@ -1,7 +1,8 @@
 package com.rest.domain.device.boundary;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
@@ -75,11 +76,13 @@ public class DeviceResource {
 	public Response createDevice(DeviceDTO device) {
 		DeviceEntity deviceEntity = deviceMapper.mapToEntity(device);
 		String id = String.valueOf(repository.save(deviceEntity));
+		repository.setIdentifiersForDevice(deviceEntity);
 		notificationService.notifySubsystems("CREATE: " + id);
 		return Response.ok()
 				.entity(id)
 				.build();
 	}
+	
 	
 	@Path(ID_PATH)
 	@PUT
@@ -90,7 +93,6 @@ public class DeviceResource {
 		DeviceEntity foundDevice = repository.getDeviceById(deviceId);
 		foundDevice.updateDevice(newDevice);
 		notificationService.notifySubsystems("UPDATE: " + foundDevice.getId());
-		repository.getIdentifier();
 		return Response.ok()
 				.entity(deviceId)
 				.build();

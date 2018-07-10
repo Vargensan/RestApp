@@ -1,13 +1,17 @@
 package com.rest.domain.device.control;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
+import javax.ejb.Asynchronous;
 import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -22,6 +26,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import com.rest.domain.device.entity.CardEntity;
 import com.rest.domain.device.entity.CardType;
 import com.rest.domain.device.entity.DeviceEntity;
+import com.rest.domain.device.entity.Type;
 import com.rest.infrastructure.LogInterceptor;
 
 public class DeviceRepository {
@@ -46,18 +51,57 @@ public class DeviceRepository {
 		entityManager.remove(device);
 	}
 	
-	
-	public int getIdentifier(String type) {
+	@Asynchronous
+	public void setIdentifiersForDevice(DeviceEntity deviceEntity) {
 		
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Integer> cq = criteriaBuilder.createQuery(Integer.class);
-		Root<CardEntity> cRoot = cq.from(CardEntity.class);
-		cq.select( cRoot.get("nrType") ) . where( cRoot.get("cardType").in(type) );
+		CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+		Root<DeviceEntity> cRoot = criteriaQuery.from(DeviceEntity.class);
+		criteriaQuery
+			.select(cRoot.get("number")) 
+			.where(cRoot.get("type").in(Type.fromString(deviceEntity.getType())));
 		
-		Set<Integer> integers = new HashSet<>(entityManager.createQuery(cq).getResultList());
 		
-		int[] x = integers.toArray().;
-		return getMinPositiveNumberNotInList(integers);
+		Set<Integer> reservedIdNumbers = new HashSet<>(entityManager.createQuery(criteriaQuery).getResultList());
+		
+		int minimalAvaliableID = getMinPositiveNumberNotInList(reservedIdNumbers);
+		
+		deviceEntity.setNumber(minimalAvaliableID);
+		deviceEntity.setIdentifier(NamespaceController.makeIdentifier(minimalAvaliableID, deviceEntity.getType()));
+		
+		HashMap<CardType, Integer> reservedCardNumbers = new HashMap<>();
+	
+		Arrays.asList(CardType.values()).forEach(cardType -> reservedCardNumbers.put(cardType, 1));
+		
+		deviceEntity.getCards().forEach( card -> {
+			
+			CardType cardType = CardType.fromString(card.getCardType());
+			int nextIdenNumber = reservedCardNumbers.get(cardType);
+			card.setNumber(nextIdenNumber);
+			card.setIdentifier(NamespaceController.makeIdentifier(card.getNumber(), deviceEntity.getIdentifier()+"/"+card.getCardType()));
+			reservedCardNumbers.put(cardType,reservedCardNumbers.get(cardType)+1);
+			
+		});
+		
+	}
+	
+
+	
+	public void applyUpdateForDevice(DeviceEntity deviceEntity) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Integer> criteriaQuery = criteriaBuilder.createQuery(Integer.class);
+		Root<CardEntity> cRoot = criteriaQuery.from(CardEntity.class);
+		criteriaQuery
+			.select(cRoot.get("number")) 
+			.where(cRoot.get("cardType").in(CardType.fromString(deviceEntity.getType())));
+		
+		Set<Integer> reservedIdNumbers = new HashSet<>(entityManager.createQuery(criteriaQuery).getResultList());
+		
+		int minimalAvaliableID = NamespaceController.getMinPositiveNumberNotInList(reservedIdNumbers);
+		
+		deviceEntity.setNumber(minimalAvaliableID);
+		deviceEntity.setIdentifier(NamespaceController.makeIdentifier(minimalAvaliableID, deviceEntity.getType()));
+		
 	}
 
 

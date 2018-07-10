@@ -1,6 +1,8 @@
 package com.rest.domain.device.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
+import com.rest.domain.device.control.NamespaceController;
+
 
 
 
@@ -22,6 +26,11 @@ public class DeviceEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
+	
+	private long serialNumber;
+	private long serialPart;
+	
+	private int number;
 	private Type type;
 	
 	@OneToMany(cascade=CascadeType.ALL, orphanRemoval=true)
@@ -39,6 +48,25 @@ public class DeviceEntity {
 		return id;
 	}
 
+	public void setNumber(int number) {
+		this.number = number;
+	}
+	
+	public void setSerialNumber(long serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+	
+	public void setSerialPart(long serialPart) {
+		this.serialPart = serialPart;
+	}
+	
+	public long getSerialNumber() {
+		return serialNumber;
+	}
+	
+	public long getSerialPart() {
+		return serialPart;
+	}
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -47,6 +75,10 @@ public class DeviceEntity {
 		return identifier;
 	}
 
+	public int getNumber() {
+		return number;
+	}
+	
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
 	}
@@ -59,9 +91,26 @@ public class DeviceEntity {
 	 *  
 	 *  Intenceptor -> logowanie REQUEST'ow do pliku 
 	 */
+	
+	private boolean isCorrectDevice(DeviceEntity deviceEntity) {
+		if(deviceEntity.getIdentifier().equals(this.getIdentifier())){
+			if(deviceEntity.getId() == this.getId() || deviceEntity.getId() == 0) {
+				if(deviceEntity.getType().equals(this.getType()) || deviceEntity.getType() == null) {
+					if(deviceEntity.getNumber() == this.getNumber() || deviceEntity.getNumber() == 0) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
 	public void updateDevice(DeviceEntity deviceEntity) {
+		if(isCorrectDevice(deviceEntity)){
+			this.serialNumber = deviceEntity.getSerialNumber();
+			this.serialPart = deviceEntity.getSerialPart();
+		}
 		updateCardsInside(deviceEntity.getCards(), cards);
-		this.identifier = deviceEntity.getIdentifier();
 	}
 	
 	private void updateCardsInside(List<CardEntity> cardsToCheck, List<CardEntity> actualCards) {
@@ -70,17 +119,31 @@ public class DeviceEntity {
 		actualCards.retainAll(cardsToCheck);
 		for(CardEntity actualCard : actualCards) {
 			for (CardEntity updateCard : cardsToCheck) {
-				if(actualCard.equals(updateCard)) {
+				if(actualCard.equals(updateCard) && validateCard(updateCard)) {
+					
 					actualCard.updateCard(updateCard);
+					
 				}else {
-					if(cardsToAdd.contains(updateCard)) {
+					if(!cardsToAdd.contains(updateCard) && validateCard(updateCard)) {
+					
 						cardsToAdd.add(updateCard);
+						
 					}
 				}
 			}
 		}
 		actualCards.addAll(cardsToAdd);
 	}
+	
+	private boolean validateCard(CardEntity cardEntity) {
+		String correctID = NamespaceController.makeIdentifier( cardEntity.getNumber(), this.getIdentifier()+"/"+cardEntity.getCardType());
+		if(correctID.equals(cardEntity.getIdentifier())) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
 	
 	
 	public void setType(String type) {

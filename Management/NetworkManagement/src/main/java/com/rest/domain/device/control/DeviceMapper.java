@@ -14,6 +14,9 @@ public class DeviceMapper{
 		deviceEntity.setId(deviceDTO.getId());
 		deviceEntity.setIdentifier(deviceDTO.getIdentifier());
 		deviceEntity.setType(deviceDTO.getType());
+		deviceEntity.setNumber(deviceDTO.getNumber());
+		deviceEntity.setSerialNumber(deviceDTO.getSerialNumber());
+		deviceEntity.setSerialPart(deviceDTO.getSerialPart());
 		deviceEntity.setCards(
 				deviceDTO.getCards()
 				.stream()
@@ -32,6 +35,9 @@ public class DeviceMapper{
 		device.setId(deviceEntity.getId());
 		device.setIdentifier(deviceEntity.getIdentifier());
 		device.setType(deviceEntity.getType());
+		device.setNumber(deviceEntity.getNumber());
+		device.setSerialNumber(deviceEntity.getSerialNumber());
+		device.setSerialPart(deviceEntity.getSerialPart());
 		device.setCards(deviceEntity.getCards()
 				.stream()
 				.map(cardMapper::mapToDTO)

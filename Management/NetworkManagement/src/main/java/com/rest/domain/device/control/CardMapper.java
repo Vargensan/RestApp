@@ -9,6 +9,9 @@ public class CardMapper{
 		CardEntity cardEntity = new CardEntity();
 		cardEntity.setCardType(cardDTO.getCardType());
 		cardEntity.setIdentifier(cardDTO.getIdentifier());
+		cardEntity.setNumber(cardDTO.getNumber());
+		cardEntity.setSerialNumber(cardDTO.getSerialNumber());
+		cardEntity.setSerialPart(cardDTO.getSerialPart());
 		cardEntity.setId(cardDTO.getId());
 		return cardEntity;
 	}
@@ -18,7 +21,10 @@ public class CardMapper{
 		CardDTO cardDTO = new CardDTO();
 		cardDTO.setCardType(cardEntity.getCardType());
 		cardDTO.setId(cardEntity.getId());
+		cardDTO.setSerialNumber(cardEntity.getSerialNumber());
+		cardDTO.setSerialPart(cardDTO.getSerialPart());
 		cardDTO.setIdentifier(cardEntity.getIdentifier());
+		cardDTO.setNumber(cardEntity.getNumber());
 		return cardDTO;
 	}
 

@@ -7,8 +7,31 @@ public class CardDTO {
 	
 	private String identifier;
 	private String cardType;
+	private int number;
 	
-
+	private long serialNumber;
+	private long serialPart;
+	
+	public void setSerialNumber(long serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+	
+	public void setSerialPart(long serialPart) {
+		this.serialPart = serialPart;
+	}
+	
+	public long getSerialNumber() {
+		return serialNumber;
+	}
+	
+	public long getSerialPart() {
+		return serialPart;
+	}
+	
+	public void setNumber(int number) {
+		this.number = number;
+	}
+	
 	public void setCardType(String cardType) {
 		this.cardType = cardType;
 	}
@@ -23,6 +46,10 @@ public class CardDTO {
 	
 	public String getCardType() {
 		return cardType;
+	}
+	
+	public int getNumber() {
+		return number;
 	}
 	
 	public int getId() {

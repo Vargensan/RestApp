@@ -17,18 +17,39 @@ public class CardEntity {
 	private int id;
 	
 	private String identifier;
+	private int number;
 	
 	private CardType cardType;
 	
-	
+	private long serialNumber;
+	private long serialPart;
 	
 
+	public void setNumber(int number) {
+		this.number = number;
+	}
 	public void setCardType(String cardType) {
 		this.cardType = CardType.fromString(cardType);
 	}
 	
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
+	}
+	
+	
+	public void setSerialNumber(long serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+	public void setSerialPart(long serialPart) {
+		this.serialPart = serialPart;
+	}
+	
+	public long getSerialNumber() {
+		return serialNumber;
+	}
+	
+	public long getSerialPart() {
+		return serialPart;
 	}
 	
 	public void setId(int id) {
@@ -40,6 +61,9 @@ public class CardEntity {
 		return id;
 	}
 	
+	public int getNumber() {
+		return number;
+	}
 
 	public String getCardType() {
 		return cardType.getName();
@@ -51,19 +75,18 @@ public class CardEntity {
 	
 	
 	public void updateCard(CardEntity cardEntity) {
-		this.identifier = cardEntity.getIdentifier();
-		this.cardType = CardType.fromString(cardEntity.getCardType());
+		this.serialNumber = cardEntity.getSerialNumber();
+		this.serialPart = cardEntity.getSerialPart();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		CardEntity cardEntity = (CardEntity) obj;
-		if(cardEntity.getId() != 0) {
-			if(cardEntity.getId() == this.getId()) {
+		if(cardEntity.getIdentifier() == null) {
+			return false;
+		}
+		if(cardEntity.getIdentifier().equals(identifier)) {
 				return true;
-			}else {
-				return false;
-			}
 		}else{
 			return false;
 		}
