@@ -22,7 +22,7 @@ public class CardMapper{
 		cardDTO.setCardType(cardEntity.getCardType());
 		cardDTO.setId(cardEntity.getId());
 		cardDTO.setSerialNumber(cardEntity.getSerialNumber());
-		cardDTO.setSerialPart(cardDTO.getSerialPart());
+		cardDTO.setSerialPart(cardEntity.getSerialPart());
 		cardDTO.setIdentifier(cardEntity.getIdentifier());
 		cardDTO.setNumber(cardEntity.getNumber());
 		return cardDTO;

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -13,8 +15,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.transaction.Transactional;
 
+import org.hibernate.jpa.criteria.predicate.IsEmptyPredicate;
+
+import com.rest.domain.device.control.CardMapper;
+import com.rest.domain.device.control.DeviceMapper;
 import com.rest.domain.device.control.NamespaceController;
+import com.sun.xml.bind.v2.runtime.Name;
 
 
 
@@ -82,69 +90,6 @@ public class DeviceEntity {
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
 	}
-
-	
-	/*
-	 * 	Update ->  are equals -> identifier are same;
-	 *  Update -> not equals ->
-	 *  deviceDTO/naming 
-	 *  
-	 *  Intenceptor -> logowanie REQUEST'ow do pliku 
-	 */
-	
-	private boolean isCorrectDevice(DeviceEntity deviceEntity) {
-		if(deviceEntity.getIdentifier().equals(this.getIdentifier())){
-			if(deviceEntity.getId() == this.getId() || deviceEntity.getId() == 0) {
-				if(deviceEntity.getType().equals(this.getType()) || deviceEntity.getType() == null) {
-					if(deviceEntity.getNumber() == this.getNumber() || deviceEntity.getNumber() == 0) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
-	public void updateDevice(DeviceEntity deviceEntity) {
-		if(isCorrectDevice(deviceEntity)){
-			this.serialNumber = deviceEntity.getSerialNumber();
-			this.serialPart = deviceEntity.getSerialPart();
-		}
-		updateCardsInside(deviceEntity.getCards(), cards);
-	}
-	
-	private void updateCardsInside(List<CardEntity> cardsToCheck, List<CardEntity> actualCards) {
-		List<CardEntity> cardsToAdd = new ArrayList<>();
-		
-		actualCards.retainAll(cardsToCheck);
-		for(CardEntity actualCard : actualCards) {
-			for (CardEntity updateCard : cardsToCheck) {
-				if(actualCard.equals(updateCard) && validateCard(updateCard)) {
-					
-					actualCard.updateCard(updateCard);
-					
-				}else {
-					if(!cardsToAdd.contains(updateCard) && validateCard(updateCard)) {
-					
-						cardsToAdd.add(updateCard);
-						
-					}
-				}
-			}
-		}
-		actualCards.addAll(cardsToAdd);
-	}
-	
-	private boolean validateCard(CardEntity cardEntity) {
-		String correctID = NamespaceController.makeIdentifier( cardEntity.getNumber(), this.getIdentifier()+"/"+cardEntity.getCardType());
-		if(correctID.equals(cardEntity.getIdentifier())) {
-			return true;
-		}else {
-			return false;
-		}
-	}
-	
-	
 	
 	public void setType(String type) {
 		this.type = Type.fromString(type);
@@ -163,6 +108,95 @@ public class DeviceEntity {
 	public List<CardEntity> getCards() {
 		return cards;
 	}
+
+	
+	private boolean isCorrectDevice(DeviceEntity deviceEntity) {
+		if(deviceEntity.getIdentifier().equals(this.getIdentifier())){
+			if(deviceEntity.getId() == this.getId() || deviceEntity.getId() == 0) {
+				if(deviceEntity.getType().equals(this.getType()) || deviceEntity.getType() == null || deviceEntity.getType() == "") {
+					if(deviceEntity.getNumber() == this.getNumber() || deviceEntity.getNumber() == 0) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	public void updateDevice(DeviceEntity deviceEntity) {
+		if(isCorrectDevice(deviceEntity)){
+			serialNumber = deviceEntity.getSerialNumber();
+			serialPart = deviceEntity.getSerialPart();
+			updateCardsInsideBasedOn(deviceEntity);
+		}
+	}
+	
+	
+	@Transactional
+	private void updateCardsInsideBasedOn(DeviceEntity deviceEntity) {
+		cards.retainAll(deviceEntity.getCards());
+		deviceEntity.getCards().forEach(card -> {	
+			if(cards.contains(card)) {
+				CardEntity cardToUpdate = getEqualCard(cards, card);
+				cardToUpdate.updateCard(card);
+			}else {
+				if(validateCardIdentifier(card)) {
+					cards.add(card);
+				}else {
+					if(isCardAbleToResolveDependancies(card)) {
+						resolveCardDependancies(card);
+						cards.add(card);
+					}
+				}
+			}
+		});
+	}
+	
+	private boolean isCardAbleToResolveDependancies(CardEntity cardEntity) {
+		if(!(cardEntity.getCardType() == null)) {
+			if(cardEntity.getNumber() == 0) {
+				if(cardEntity.getIdentifier() == null || cardEntity.getIdentifier().equals("") ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private CardEntity getEqualCard(List<CardEntity> cards, CardEntity card) {
+		for(CardEntity cardEntity : cards) {
+			if(cardEntity.equals(card)) {
+				return cardEntity;
+			}
+		}
+		return null;
+	}
+	
+	private boolean validateCardIdentifier(CardEntity cardEntity) {
+		String correctID = NamespaceController.makeIdentifier( cardEntity.getNumber(), this.getIdentifier(),cardEntity.getCardType());
+		if(correctID.equals(cardEntity.getIdentifier())) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	private void resolveCardDependancies(CardEntity cardInfo) {
+		cardInfo.setNumber(
+				NamespaceController.minimalPositiveNumberNotInCollection(
+						cards.stream()
+						.map(card -> card)
+						.filter(predicate -> predicate.getCardType().equals(cardInfo.getCardType()))
+						.collect(Collectors.toSet())
+						.stream()
+						.map(card -> card.getNumber())
+						.collect(Collectors.toSet())
+						)
+				);
+		
+		cardInfo.setIdentifier(NamespaceController.makeIdentifier(cardInfo.getNumber(), this.getIdentifier(),cardInfo.getCardType()));
+	}
+	
 	
 	
 	@Override

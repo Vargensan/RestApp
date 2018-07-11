@@ -81,15 +81,20 @@ public class CardEntity {
 
 	@Override
 	public boolean equals(Object obj) {
+		if(obj == null) {
+			return false;
+		}
+		if(obj == this) {
+			return true;
+		}
 		CardEntity cardEntity = (CardEntity) obj;
-		if(cardEntity.getIdentifier() == null) {
+		if(cardEntity.getIdentifier() == null || cardEntity.getIdentifier() == "") {
 			return false;
 		}
-		if(cardEntity.getIdentifier().equals(identifier)) {
-				return true;
-		}else{
-			return false;
+		if(cardEntity.getIdentifier().equals(this.getIdentifier())) {
+			return true;
 		}
+		return false;
 	}
 	
 	
