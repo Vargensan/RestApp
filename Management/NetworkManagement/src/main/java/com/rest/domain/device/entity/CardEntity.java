@@ -78,6 +78,16 @@ public class CardEntity {
 		this.serialNumber = cardEntity.getSerialNumber();
 		this.serialPart = cardEntity.getSerialPart();
 	}
+	
+	public boolean isCardTypeSet() {
+		return !(getCardType() == null);
+	}
+	public boolean isNumberSet() {
+		return getNumber() != 0;
+	}
+	public boolean isIdentifierSet() {
+		return !(getIdentifier() == null) && !getIdentifier().equals("");
+	}
 
 	@Override
 	public boolean equals(Object obj) {

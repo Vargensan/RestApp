@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.swing.text.StyledEditorKit.BoldAction;
 import javax.transaction.Transactional;
 
 import org.hibernate.jpa.criteria.predicate.IsEmptyPredicate;
@@ -111,18 +112,13 @@ public class DeviceEntity {
 
 	
 	private boolean isCorrectDevice(DeviceEntity deviceEntity) {
-		if(deviceEntity.getIdentifier().equals(this.getIdentifier())){
-			if(deviceEntity.getId() == this.getId() || deviceEntity.getId() == 0) {
-				if(deviceEntity.getType().equals(this.getType()) || deviceEntity.getType() == null || deviceEntity.getType() == "") {
-					if(deviceEntity.getNumber() == this.getNumber() || deviceEntity.getNumber() == 0) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+		return isSameIdentifierOrNotSet(deviceEntity) && 
+				isSameIDOrNotSet(deviceEntity) &&
+				isSameTypeOrNotSet(deviceEntity) &&
+				isSameNumberOrNotSet(deviceEntity);
 	}
 	
+	@Transactional
 	public void updateDevice(DeviceEntity deviceEntity) {
 		if(isCorrectDevice(deviceEntity)){
 			serialNumber = deviceEntity.getSerialNumber();
@@ -153,14 +149,9 @@ public class DeviceEntity {
 	}
 	
 	private boolean isCardAbleToResolveDependancies(CardEntity cardEntity) {
-		if(!(cardEntity.getCardType() == null)) {
-			if(cardEntity.getNumber() == 0) {
-				if(cardEntity.getIdentifier() == null || cardEntity.getIdentifier().equals("") ) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return cardEntity.isCardTypeSet() && 
+				!cardEntity.isNumberSet() && 
+				!cardEntity.isIdentifierSet();
 	}
 	
 	private CardEntity getEqualCard(List<CardEntity> cards, CardEntity card) {
@@ -197,6 +188,22 @@ public class DeviceEntity {
 		cardInfo.setIdentifier(NamespaceController.makeIdentifier(cardInfo.getNumber(), this.getIdentifier(),cardInfo.getCardType()));
 	}
 	
+	
+	private boolean isSameIdentifierOrNotSet(DeviceEntity deviceEntity) {
+		return deviceEntity.getIdentifier().equals(this.getIdentifier());
+	}
+	
+	private boolean isSameIDOrNotSet(DeviceEntity deviceEntity) {
+		return deviceEntity.getId() == this.getId() || deviceEntity.getId() == 0;
+	}
+	
+	private boolean isSameTypeOrNotSet(DeviceEntity deviceEntity) {
+		return deviceEntity.getType().equals(this.getType()) || deviceEntity.getType() == null || deviceEntity.getType() == "";
+	}
+	
+	private boolean isSameNumberOrNotSet(DeviceEntity deviceEntity) {
+		return deviceEntity.getNumber() == this.getNumber() || deviceEntity.getNumber() == 0;
+	}
 	
 	
 	@Override
